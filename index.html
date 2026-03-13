@@ -18,7 +18,6 @@
     .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--primary); font-size: 20px; font-weight: bold; flex-shrink: 0; }
     .logo img { height: 36px; }
 
-    /* 伸缩搜索框 */
     .search-form { display: flex; align-items: center; position: relative; }
     .search-input { 
         padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd; 
@@ -26,15 +25,13 @@
     }
     .search-input:focus { width: 200px; border-color: var(--primary); background: #fff; }
     .search-btn { margin-left: -30px; background: none; border: none; cursor: pointer; color: #666; }
-
-    /* 容器：增加侧边距 */
+       
     .container { max-width: 1300px; margin: 20px auto; padding: 0 30px; }
 
-    /* --- 核心修改：加大视频方块之间的物理间隔 --- */
     .video-grid { 
         display: grid; 
-        grid-template-columns: repeat(2, 1fr); /* 手机端 2 列 */
-        gap: 30px 20px; /* 第一个值是行间距，第二个是列间距 */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px 30px;
     }
 
     .card { 
@@ -45,16 +42,15 @@
     .card:hover { transform: translateY(-4px); }
     
     .cover { width: 100%; aspect-ratio: 16/9; background: #e3e5e7; background-size: cover; background-position: center; }
-    .info { padding: 12px 8px; } /* 缩小内部边距，让外部间隔更明显 */
+    .info { padding: 12px 8px; }
     .v-title { font-size: 14px; font-weight: 500; line-height: 1.4; height: 40px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 
-    /* 电脑端适配 */
     @media (min-width: 768px) {
         header { padding: 0 40px; }
         .logo { font-size: 24px; }
         .video-grid { 
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
-            gap: 40px 30px; /* 电脑端大幅增加间距 */
+            gap: 40px 30px;
         }
         .search-input { width: 180px; }
         .search-input:focus { width: 350px; }
@@ -63,7 +59,7 @@
     @media (max-width: 400px) {
         .logo span { display: none; }
         .container { padding: 0 15px; }
-        .video-grid { gap: 20px 15px; } /* 小手机适当收缩，防止卡片太小 */
+        .video-grid { gap: 20px 15px; }
     }
 </style>
 </head>
@@ -74,7 +70,7 @@
         <span>番实视频站</span>
     </a>
     <form action="search.html" method="GET" class="search-form">
-        <input type="text" name="q" class="search-input" placeholder="搜索视频...">
+        <input type="text" name="q" class="search-input" placeholder="目前无法搜索......">
         <button type="submit" class="search-btn">🔍</button>
     </form>
 </header>

@@ -31,27 +31,59 @@
 </div>
 
 <script>
-  // --- 关键：必须与 index.html 的列表完全一致 ---
+  // 必须与 index.html 的列表顺序完全一致
   const myVideos = [
+      { name: "我的B站投稿视频", bvid: "BV1U38CzfEkD" },
       { name: "01 门捷列夫是怎样“炼”成的.mp4" },
-      { name: "举起手来.mp4" }
+      { name: "【1080P Full Movie】《举起手来》" }
   ];
 
-  function init() {
-    // 解析 URL 里的 ?id=X
+  let currentFileName = "";
+
+  async function init() {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
     const video = myVideos[id];
+    // 这里的 playerContainer 对应你 HTML 中包裹播放器的 div
+    const container = document.querySelector('.player-box'); 
 
     if (video) {
-      document.title = video.name + " - 播放中";
-      document.getElementById('title').innerText = video.name;
-      // 指向 uploads 文件夹下的视频文件
-      document.getElementById('player').src = `uploads/${encodeURIComponent(video.name)}`;
+      currentFileName = video.name;
+      document.getElementById('title').innerText = currentFileName;
+
+      if (video.bvid) {
+        // 插入你提供的 B 站嵌入代码，并加上高清和自适应参数
+        container.innerHTML = `
+          <iframe src="//player.bilibili.com/player.html?bvid=${video.bvid}&page=1&high_quality=1&as_wide=1" 
+            scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" 
+            style="width:100%; height:100%; border:none;">
+          </iframe>`;
+      } else {
+        // 播放 uploads 文件夹下的本地视频
+        container.innerHTML = `
+          <video id="player" controls autoplay style="width:100%; height:100%;">
+            <source src="uploads/${encodeURIComponent(currentFileName)}" type="video/mp4">
+          </video>`;
+      }
+      
+      loadStaticRecs(id);
     } else {
-      document.getElementById('title').innerText = '视频不存在';
+      document.getElementById('title').innerText = "视频不存在";
     }
   }
+
+  // 简单的静态推荐逻辑
+  function loadStaticRecs(currentId) {
+    const list = document.getElementById('recommendList');
+    const others = myVideos.map((v, i) => ({...v, id: i})).filter(v => v.id != currentId);
+    list.innerHTML = others.map(v => `
+      <a href="video.html?id=${v.id}" class="rec-item">
+        <div class="rec-cover">🎬</div>
+        <div class="rec-title">${v.name}</div>
+      </a>
+    `).join('');
+  }
+
   window.onload = init;
 </script>
 </body>

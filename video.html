@@ -7,43 +7,29 @@
 <style>
   :root { --primary: #009A44; }
   body { margin: 0; background: #f1f2f3; font-family: sans-serif; }
-  
-  header { height: 60px; background: #fff; display: flex; align-items: center; padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-  .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--primary); font-size: 20px; font-weight: bold; }
-  .logo img { height: 35px; }
-  
-  /* 主体内容适配 */
-  .main { 
-    max-width: 1000px; /* 电脑端不至于太宽 */
-    margin: 10px auto; 
-    padding: 0 10px; 
+  header { 
+      height: 64px; background: #fff; display: flex; align-items: center; 
+      padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
   }
+  .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--primary); font-size: 20px; font-weight: bold; }
+  .logo img { height: 36px; }
 
-  /* 播放器比例锁定 */
+  .main { max-width: 1000px; margin: 15px auto; padding: 0 10px; }
+  
   .player-box { 
-    background: #000; 
-    border-radius: 8px; 
-    overflow: hidden; 
-    width: 100%;
-    aspect-ratio: 16 / 9; /* 关键：锁定 16:9，防止手机端压扁 */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background: #000; border-radius: 12px; overflow: hidden; 
+    width: 100%; aspect-ratio: 16/9; /* 锁定 16:9 比例 */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
   }
   iframe, video { width: 100%; height: 100%; border: none; display: block; }
 
-  /* 标题信息适配 */
-  .v-info { 
-    margin-top: 15px; 
-    background: #fff; 
-    padding: 15px; 
-    border-radius: 8px; 
-  }
-  #title { font-size: 18px; margin: 0; color: #18191c; line-height: 1.4; }
-  .hint { color: #999; font-size: 12px; margin-top: 8px; display: block; }
+  .v-info { margin-top: 20px; background: #fff; padding: 20px; border-radius: 12px; }
+  #title { font-size: 18px; margin: 0; color: #18191c; }
 
   @media (min-width: 768px) {
-    .main { margin: 20px auto; padding: 0 20px; }
-    .v-info { padding: 25px; }
-    #title { font-size: 22px; }
+    header { padding: 0 40px; }
+    .main { margin: 30px auto; padding: 0 20px; }
+    #title { font-size: 24px; }
   }
 </style>
 

@@ -260,11 +260,12 @@
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const fileName = urlParams.get('file');
+    const category = urlParams.get('category') || '未分类';
 
     if (fileName) {
         document.getElementById('videoTitle').innerText = fileName.replace(/\.mp4$/i, '');
         document.getElementById('player').innerHTML = `
-            <video controls autoplay><source src="/uploads/${fileName}" type="video/mp4"></video>
+            <video controls autoplay><source src="/uploads/${encodeURIComponent(category)}/${encodeURIComponent(fileName)}" type="video/mp4"></video>
         `;
         
         // 添加页面元素动画

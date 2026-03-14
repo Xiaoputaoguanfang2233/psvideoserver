@@ -353,10 +353,10 @@
                 const displayTitle = v.filename.replace(/\.mp4$/i, ''); 
                 
                 return `
-                <a href="video.html?file=${encodeURIComponent(v.filename)}" class="video-card">
+                <a href="video.html?file=${encodeURIComponent(v.filename)}&category=${encodeURIComponent(v.category)}" class="video-card">
                     <div class="cover-box">
                         <i style="color:#555">🎬</i>
-                        <video class="cover-video" data-src="/uploads/${encodeURIComponent(v.filename)}" style="display:none;"></video>
+                        <video class="cover-video" data-src="/uploads/${encodeURIComponent(v.category)}/${encodeURIComponent(v.filename)}" style="display:none;"></video>
                     </div>
                     <div class="info">${displayTitle}</div>
                 </a>

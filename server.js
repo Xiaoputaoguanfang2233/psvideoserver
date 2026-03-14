@@ -17,7 +17,15 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 // 配置 multer
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, UPLOADS_DIR);
+        const category = req.body.category || '未分类';
+        const categoryDir = path.join(UPLOADS_DIR, category);
+        
+        // 确保分类目录存在
+        if (!fs.existsSync(categoryDir)) {
+            fs.mkdirSync(categoryDir, { recursive: true });
+        }
+        
+        cb(null, categoryDir);
     },
     filename: function (req, file, cb) {
         cb(null, file.originalname);
@@ -55,38 +63,90 @@ app.use('/uploads', express.static(UPLOADS_DIR));
 
 // 获取视频列表（带分类信息）
 app.get('/api/videos', (req, res) => {
-    fs.readdir(UPLOADS_DIR, (err, files) => {
+    const videosWithInfo = [];
+    
+    // 读取上传目录下的所有分类目录
+    fs.readdir(UPLOADS_DIR, (err, categories) => {
         if (err) {
             console.error('读取 uploads 目录失败:', err);
             return res.status(500).json([]);
         }
         
-        const videos = files.filter(f => f.toLowerCase().endsWith('.mp4'));
-        const db = getDB();
+        let processedCategories = 0;
         
-        const videosWithInfo = videos.map(video => {
-            return {
-                filename: video,
-                category: db[video]?.category || '未分类'
-            };
+        categories.forEach(category => {
+            const categoryDir = path.join(UPLOADS_DIR, category);
+            
+            // 检查是否是目录
+            fs.stat(categoryDir, (err, stats) => {
+                if (!err && stats.isDirectory()) {
+                    // 读取分类目录下的视频文件
+                    fs.readdir(categoryDir, (err, files) => {
+                        if (!err) {
+                            const videos = files.filter(f => f.toLowerCase().endsWith('.mp4'));
+                            videos.forEach(video => {
+                                videosWithInfo.push({
+                                    filename: video,
+                                    category: category
+                                });
+                            });
+                        }
+                        
+                        processedCategories++;
+                        if (processedCategories === categories.length) {
+                            res.json(videosWithInfo);
+                        }
+                    });
+                } else {
+                    processedCategories++;
+                    if (processedCategories === categories.length) {
+                        res.json(videosWithInfo);
+                    }
+                }
+            });
         });
         
-        res.json(videosWithInfo);
+        // 处理空目录情况
+        if (categories.length === 0) {
+            res.json(videosWithInfo);
+        }
     });
 });
 
 // 获取分类列表
 app.get('/api/categories', (req, res) => {
-    const db = getDB();
-    const categories = new Set(['未分类']);
-    
-    Object.keys(db).forEach(videoId => {
-        if (db[videoId].category) {
-            categories.add(db[videoId].category);
+    fs.readdir(UPLOADS_DIR, (err, items) => {
+        if (err) {
+            console.error('读取 uploads 目录失败:', err);
+            return res.status(500).json(['未分类']);
+        }
+        
+        const categories = [];
+        let processedItems = 0;
+        
+        items.forEach(item => {
+            const itemPath = path.join(UPLOADS_DIR, item);
+            fs.stat(itemPath, (err, stats) => {
+                if (!err && stats.isDirectory()) {
+                    categories.push(item);
+                }
+                
+                processedItems++;
+                if (processedItems === items.length) {
+                    // 确保至少包含'未分类'分类
+                    if (!categories.includes('未分类')) {
+                        categories.push('未分类');
+                    }
+                    res.json(categories);
+                }
+            });
+        });
+        
+        // 处理空目录情况
+        if (items.length === 0) {
+            res.json(['未分类']);
         }
     });
-    
-    res.json(Array.from(categories));
 });
 
 // 为视频设置分类
@@ -96,16 +156,83 @@ app.post('/api/set-category', (req, res) => {
         return res.status(400).json({ error: '缺少必要参数' });
     }
 
-    const db = getDB();
-    if (!db[videoId]) db[videoId] = { comments: [], likes: 0, category: '未分类' };
-    
-    db[videoId].category = category;
+    // 查找视频文件的当前位置
+    fs.readdir(UPLOADS_DIR, (err, categories) => {
+        if (err) {
+            console.error('读取 uploads 目录失败:', err);
+            return res.status(500).json({ error: '分类设置失败，请稍后重试' });
+        }
 
-    if (saveDB(db)) {
-        res.json({ success: true });
-    } else {
-        res.status(500).json({ error: '分类保存失败，请稍后重试' });
-    }
+        let found = false;
+        let currentCategory = null;
+        
+        // 遍历所有分类目录查找视频
+        const checkCategory = (index) => {
+            if (index >= categories.length) {
+                if (!found) {
+                    return res.status(404).json({ error: '视频文件不存在' });
+                }
+                return;
+            }
+
+            const cat = categories[index];
+            const catDir = path.join(UPLOADS_DIR, cat);
+            
+            fs.stat(catDir, (err, stats) => {
+                if (!err && stats.isDirectory()) {
+                    fs.readdir(catDir, (err, files) => {
+                        if (!err && files.includes(videoId)) {
+                            found = true;
+                            currentCategory = cat;
+                            
+                            // 如果分类没有变化，直接返回成功
+                            if (currentCategory === category) {
+                                return res.json({ success: true });
+                            }
+                            
+                            // 确保目标分类目录存在
+                            const targetDir = path.join(UPLOADS_DIR, category);
+                            if (!fs.existsSync(targetDir)) {
+                                fs.mkdirSync(targetDir, { recursive: true });
+                            }
+                            
+                            // 移动视频文件
+                            const oldPath = path.join(catDir, videoId);
+                            const newPath = path.join(targetDir, videoId);
+                            
+                            fs.rename(oldPath, newPath, (err) => {
+                                if (err) {
+                                    console.error('移动视频文件失败:', err);
+                                    return res.status(500).json({ error: '分类设置失败，请稍后重试' });
+                                }
+                                
+                                // 同时移动封面文件（如果存在）
+                                const coverOldPath = path.join(catDir, videoId.replace(/\.mp4$/i, '.jpg'));
+                                const coverNewPath = path.join(targetDir, videoId.replace(/\.mp4$/i, '.jpg'));
+                                
+                                if (fs.existsSync(coverOldPath)) {
+                                    fs.rename(coverOldPath, coverNewPath, (err) => {
+                                        if (err) {
+                                            console.error('移动封面文件失败:', err);
+                                        }
+                                        res.json({ success: true });
+                                    });
+                                } else {
+                                    res.json({ success: true });
+                                }
+                            });
+                        } else {
+                            checkCategory(index + 1);
+                        }
+                    });
+                } else {
+                    checkCategory(index + 1);
+                }
+            });
+        };
+        
+        checkCategory(0);
+    });
 });
 
 // 获取视频的评论和点赞数
@@ -187,7 +314,7 @@ app.post('/api/upload', upload.single('video'), async (req, res) => {
     try {
         // 生成封面
         const videoPath = req.file.path;
-        const coverPath = path.join(UPLOADS_DIR, req.file.originalname.replace(/\.mp4$/i, '.jpg'));
+        const coverPath = path.join(path.dirname(videoPath), req.file.originalname.replace(/\.mp4$/i, '.jpg'));
         await generateVideoCover(videoPath, coverPath);
         
         res.json({ success: true, filename: req.file.originalname });
@@ -199,25 +326,57 @@ app.post('/api/upload', upload.single('video'), async (req, res) => {
 
 // 获取视频统计信息
 app.get('/api/stats', (req, res) => {
-    fs.readdir(UPLOADS_DIR, (err, files) => {
+    let totalVideos = 0;
+    const categories = new Set();
+    
+    fs.readdir(UPLOADS_DIR, (err, items) => {
         if (err) {
             console.error('读取 uploads 目录失败:', err);
             return res.status(500).json({ totalVideos: 0, totalCategories: 0 });
         }
         
-        const videos = files.filter(f => f.toLowerCase().endsWith('.mp4'));
-        const db = getDB();
+        let processedItems = 0;
         
-        // 计算分类数量
-        const categories = new Set();
-        videos.forEach(video => {
-            categories.add(db[video]?.category || '未分类');
+        items.forEach(item => {
+            const itemPath = path.join(UPLOADS_DIR, item);
+            fs.stat(itemPath, (err, stats) => {
+                if (!err && stats.isDirectory()) {
+                    categories.add(item);
+                    
+                    // 读取分类目录下的视频文件
+                    fs.readdir(itemPath, (err, files) => {
+                        if (!err) {
+                            const videos = files.filter(f => f.toLowerCase().endsWith('.mp4'));
+                            totalVideos += videos.length;
+                        }
+                        
+                        processedItems++;
+                        if (processedItems === items.length) {
+                            res.json({
+                                totalVideos: totalVideos,
+                                totalCategories: categories.size
+                            });
+                        }
+                    });
+                } else {
+                    processedItems++;
+                    if (processedItems === items.length) {
+                        res.json({
+                            totalVideos: totalVideos,
+                            totalCategories: categories.size
+                        });
+                    }
+                }
+            });
         });
         
-        res.json({
-            totalVideos: videos.length,
-            totalCategories: categories.size
-        });
+        // 处理空目录情况
+        if (items.length === 0) {
+            res.json({
+                totalVideos: 0,
+                totalCategories: 0
+            });
+        }
     });
 });
 

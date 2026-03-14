@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>番实视频站</title>
+    <style>
+        :root { --primary: #009A44; --bg: #f1f2f3; }
+        body { margin: 0; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        header { 
+            height: 64px; background: #fff; display: flex; align-items: center; 
+            padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            position: sticky; top: 0; z-index: 100; 
+        }
+        .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--primary); font-size: 20px; font-weight: bold; }
+        .logo img { height: 35px; }
+
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .video-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+            gap: 15px; 
+        }
+
+        .video-card { 
+            background: #fff; border-radius: 8px; overflow: hidden; 
+            text-decoration: none; color: #18191c; transition: 0.3s; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; 
+        }
+        .video-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        /* 封面容器：保持 16:9 比例 */
+        .cover-box { 
+            width: 100%; aspect-ratio: 16/9; background: #2f3136; 
+            display: flex; align-items: center; justify-content: center; 
+            position: relative; overflow: hidden;
+        }
+        .cover-box i { font-style: normal; font-size: 32px; z-index: 1; }
+        
+        /* 截图图片：绝对定位覆盖在图标上方 */
+        .cover-img { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            object-fit: cover; z-index: 2; 
+        }
+
+        .info { 
+            padding: 10px; font-size: 14px; line-height: 1.4; height: 40px; 
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; 
+            overflow: hidden; font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="/" class="logo">
+        <img src="logo.png" alt="Logo">
+        <span>番实视频站</span>
+    </a>
+</header>
+
+<div class="container">
+    <div class="video-grid" id="videoGrid">正在同步视频库...</div>
+</div>
+
+<script>
+    async function load() {
+        const grid = document.getElementById('videoGrid');
+        try {
+            const res = await fetch('/api/videos');
+            const videos = await res.json();
+            
+            if (!videos || videos.length === 0) {
+                grid.innerHTML = '<p style="color:#888; grid-column:1/-1; text-align:center;">库里空空如也，去传个视频吧！</p>';
+                return;
+            }
+
+            grid.innerHTML = videos.map(v => {
+                const displayTitle = v.replace(/\.mp4$/i, ''); 
+                
+                const coverUrl = `/uploads/${displayTitle}.jpg`; 
+                
+                return `
+                <a href="video.html?file=${encodeURIComponent(v)}" class="video-card">
+                    <div class="cover-box">
+                        <i style="color:#555">🎬</i>
+                        <img src="${coverUrl}" class="cover-img" onerror="this.style.display='none'">
+                    </div>
+                    <div class="info">${displayTitle}</div>
+                </a>
+                `;
+            }).join('');
+        } catch (e) {
+            grid.innerHTML = '<p style="text-align:center;">加载失败，请检查后端运行状态</p>';
+        }
+    }
+    window.onload = load;
+</script>
+
+</body>
+</html>

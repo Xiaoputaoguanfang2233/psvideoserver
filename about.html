@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于我们 - 番实视频站</title>
+    <style>
+        :root { --primary: #009A44; --bg: #f1f2f3; }
+        body { 
+            margin: 0; background: var(--bg); 
+            background-image: radial-gradient(#d1d1d1 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: -apple-system, sans-serif;
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .about-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 30px 20px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        h1 { color: var(--primary); margin: 0 0 15px 0; font-size: 24px; }
+        .stats {
+            background: rgba(0, 154, 68, 0.05);
+            padding: 10px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 15px;
+            color: #444;
+        }
+        .stats b { color: var(--primary); font-size: 20px; }
+        p { color: #555; line-height: 1.7; margin-bottom: 25px; font-size: 15px; }
+        .bili-link {
+            display: block;
+            margin-bottom: 30px;
+            color: #00aeec;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .back-btn {
+            display: block;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="about-card">
+        <h1>关于番实视频站</h1>
+        
+        <div class="stats">
+            已收录视频：<b id="videoCount">-</b> 个
+        </div>
+
+        <p>
+            这是一个基于 Electron 与 Node.js 构建的视频分享平台。我们致力于提供纯净、流畅的观影体验。项目由人 人 人开发维护，感谢支持。
+        </p>
+
+        <a href="index.html" class="back-btn">回到首页</a>
+    </div>
+
+    <script>
+        async function getStats() {
+            try {
+                const res = await fetch('/api/videos');
+                const videos = await res.json();
+                document.getElementById('videoCount').innerText = videos.length;
+            } catch (e) {
+                document.getElementById('videoCount').innerText = '?';
+            }
+        }
+        getStats();
+    </script>
+</body>
+</html>

@@ -23,7 +23,7 @@
             gap: 15px; 
         }
 
-        /* 响应式设计 */
+        
         @media (max-width: 768px) {
             header {
                 height: auto;
@@ -141,6 +141,54 @@
             box-shadow: 0 0 0 2px rgba(0, 154, 68, 0.2); 
         }
         
+        /* 下拉菜单样式 */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6' viewBox='0 0 12 6'%3E%3Cpath fill='%2361666d' d='M0 0l6 6 6-6z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 12px 6px;
+            cursor: pointer;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 10px 20px;
+            min-width: 140px;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        select:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 154, 68, 0.15);
+        }
+        
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 154, 68, 0.2);
+            outline: none;
+        }
+        
+        /* 下拉菜单选项样式 */
+        select option {
+            padding: 10px 15px;
+            background: white;
+            color: #18191c;
+            border: none;
+        }
+        
+        select option:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        select option:checked {
+            background: var(--primary);
+            color: white;
+        }
+        
         /* 按钮动画 */
         #uploadBtn { 
             transition: all 0.3s ease; 
@@ -255,7 +303,7 @@
             <!-- 分类筛选 -->
             <div style="display: flex; align-items: center; gap: 12px;">
                 <label style="font-size: 14px; color: #61666d; font-weight: 600; white-space: nowrap;">分类：</label>
-                <select id="categoryFilter" style="padding: 10px 20px; border: 2px solid #f0f0f0; border-radius: 12px; background: white; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); min-width: 140px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <select id="categoryFilter">
                     <option value="">全部分类</option>
                     <!-- 分类选项将通过 JavaScript 动态添加 -->
                 </select>
@@ -264,7 +312,7 @@
             <!-- 排序选项 -->
             <div style="display: flex; align-items: center; gap: 12px;">
                 <label style="font-size: 14px; color: #61666d; font-weight: 600; white-space: nowrap;">排序：</label>
-                <select id="sortOption" style="padding: 10px 20px; border: 2px solid #f0f0f0; border-radius: 12px; background: white; outline: none; transition: all 0.3s cubic-bezier(0.4, 0, 0, 1); min-width: 140px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <select id="sortOption">
                     <option value="name_asc">名称 ↑</option>
                     <option value="name_desc">名称 ↓</option>
                     <option value="time_asc">时间 ↑</option>
@@ -448,9 +496,9 @@
         const categoryFilter = document.getElementById('categoryFilter');
         const sortOption = document.getElementById('sortOption');
 
-        // 上传功能
+        // 上传功能 - 跳转到 Cloudreve
         uploadBtn.addEventListener('click', function() {
-            uploadModal.style.display = 'flex';
+            window.location.href = 'http://103.118.254.37:5212/';
         });
 
         cancelUpload.addEventListener('click', function() {

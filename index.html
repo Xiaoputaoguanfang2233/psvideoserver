@@ -403,7 +403,7 @@
                 return `
                 <a href="video.html?file=${encodeURIComponent(v.filename)}&category=${encodeURIComponent(v.category)}" class="video-card">
                     <div class="cover-box">
-                        <i style="color:#555">🎬</i>
+                        <i style="color:#555">图片加载中</i>
                         <video class="cover-video" data-src="/uploads/${encodeURIComponent(v.category)}/${encodeURIComponent(v.filename)}" style="display:none;"></video>
                     </div>
                     <div class="info">${displayTitle}</div>
@@ -496,9 +496,9 @@
         const categoryFilter = document.getElementById('categoryFilter');
         const sortOption = document.getElementById('sortOption');
 
-        // 上传功能 - 跳转到 Cloudreve
+        // 上传功能 - 跳转到 Alist
         uploadBtn.addEventListener('click', function() {
-            window.location.href = 'http://103.118.254.37:5212/';
+            window.location.href = 'http://103.118.254.37:5244/';
         });
 
         cancelUpload.addEventListener('click', function() {
